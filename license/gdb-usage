@@ -1,0 +1,63 @@
+Debugging with GDB
+
+符号式调试器
+list		l		列出源代码
+break		b		设定断点
+run		r		执行程序到结束
+next		n		下一步（跳过函数）
+step		s		下一步（跳进函数）
+print		p		显示表达式的值
+continue	c		继续执行，直到下一个断点
+quit		q		退出
+help		h		帮助
+info		i		被调试程序的状态信息
+show				调试器的状态信息
+file				指定被调试程序
+set args [args]			设置被调试程序参数，留空清除
+show args			显示参数
+kill				终止调试器，保留设置
+	
+gdb -silent(-quiet)		不显示启动信息
+gdb --args foo [foo's args]	传递被调试程序的参数
+gdb -s(-symbols)		加载符号表文件
+gdb -e(-exec)		 	指定被调试的可执行文件
+gdb -se				带有符号表的文件
+gdb -t(-tty)			选择控制台
+gdb -nw(-nowindows)		禁用GUI		(DDD -- data display debugger)
+gdb -tui			文本UI（使用curses）
+gdb -x(-command)		执行命令脚本
+gdb -batch			执行完命令文件后结束
+gdb -n(-nx)			忽略所有初始化文件
+
+
+list filename: line_number	显示代码，以此行为中心
+list from,[to]			指定范围，无to则往后10行
+list function_name		函数的第一行为中间行
+set listsize number		设置list默认输出行数
+show listsize			显示默认输出行数
+
+break [filename:] line_number	为文件设置断点
+break function			在函数第一行设定断点
+info breakpoints		显示定义的断点
+tbreak				设置临时断点
+delete		d		删除断点，-连接两断点编号表示范围，留空删除所有
+disable				临时禁用断点，无范围则影响所有断点
+enable				激活禁用的断点
+ingore bp_point iterations	忽略iter次编号bp的断点
+break [position] if expression	条件中断
+condition bp_num [expression]	改变中断条件,留空删除条件
+continue [passes]		跳过断点passes次
+step [lines]			执行lines行
+finish				执行到目前函数跳出
+backtrace	bt		显示调用轨迹（where， info stack）
+frame		f		显示目前堆栈帧
+info frame			堆栈帧的信息
+info locals			函数的局部变量及其值
+info args			函数调用的参数
+p [/format] [expression]	计算表达式和显示结果
+set variable			设置变量的值
+p func::var			存取其他堆栈帧的变量
+watch [expression]		当表达式的值改变时停止运行
+rwatch [expression]		当程序读取和此表达式相关的对象时停止运行
+awatch [expression]		读取或修改···
+

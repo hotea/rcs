@@ -1,0 +1,76 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.1
+date	2014.02.19.07.23.21;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@prompting shell , uses execvp()
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@/* prompting shell 
+ */
+#include<stdio.h>
+#include<signal.h>
+#include<string.h>
+
+#define MAXARGS 20
+#define ARGLEN	100
+
+int main()
+{
+	char *arglist[MAXARGS+1];	/* an array of ptrs */
+	int numargs;			/*index into array  */
+	char argbuf[ARGLEN];		/*read stuff here  */
+	char *makestring();		/*malloc etc       */
+	numargs = 0;
+	while (numargs < MAXARGS) {
+		printf("Arg[%d]?", numargs);
+		if (fgets(argbuf, ARGLEN, stdin) && *argbuf != '\n')
+			arglist[numargs++] = makestring(argbuf);
+		else {
+			if (numargs>0) {	/*any args?*/
+				arglist[numargs]=NULL;	/*close list */
+				execute(arglist);	/*do it      */
+				numargs = 0;		/* and reset */
+			}
+		}
+	}
+	return 0;
+
+}
+
+int execute(char *arglist[])
+{
+	execvp(arglist[0], arglist);	/* do it */
+	perror("execvp failed");
+	exit(1);
+}
+
+char * makestring(char *buf)
+{
+	char *cp, *malloc();
+
+	buf[strlen(buf)-1] = '\0';	/* trim newline */
+	cp = malloc(strlen(buf)+1);	/*get memory */
+	if (cp == NULL) {
+		fprintf(stderr, "no memory\n");
+		exit(1);
+	}
+	strcpy(cp, buf);
+	return cp;
+}
+@

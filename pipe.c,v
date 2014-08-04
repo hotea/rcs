@@ -1,0 +1,73 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.1
+date	2014.03.01.11.00.57;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@usage:pipe command1 command2
+effect: command1 | command2
+limitations: command do not take arguments
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@/* create a pipeline from one process to another
+ * takes two args, each a command, and connects
+ * av[1]s output to input of av[2]
+ * usage: pipe com1 com2
+ * effect: com1 | com2
+ */
+#include <stdio.h>
+#include <unistd.h>
+
+#define oops(m,x) {perror(m); exit(x);}
+
+main(int ac, char **av)
+{
+  int thepipe[2],
+    newfd,
+    pid;
+  if (ac != 3) {
+    fprintf(stderr,"usage:pipe cmd1 cmd2\n");
+    exit(1);
+  }
+  if (pipe(thepipe) == -1)	/* get a pipe */
+    oops("cannot get a pipe", 1);
+  /* ******************** */
+  /* now we have a pipe, now let's get two processes */
+  if ((pid = fork()) == -1)
+    oops("cannot fork", 2);
+  /* ******************** */
+  /* parent proc will read from pipe */
+  if(pid > 0) {			/* parent will exec av[2] */
+    close(thepipe[1]);		/* parent doesn't write to pipe */
+
+    if (dup2(thepipe[0],0) == -1)
+      oops("could not redirect stdin", 3);
+
+    close(thepipe[0]);		/* stdin is duped, close pipe */
+    execlp(av[2],av[2],NULL);
+    oops(av[2],4);
+  }
+  /* child execs av[1] and writes into pipe */
+  close(thepipe[0]);		/* child doesn't read from pipe */
+
+  if (dup2(thepipe[1],1) == -1)
+    oops("could not redirect stdout",4);
+  close(thepipe[1]);		/* stdout is duped, close pipe */
+  execlp(av[1],av[1],NULL);
+  oops(av[1],5);
+}
+@

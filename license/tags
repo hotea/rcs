@@ -1,0 +1,40 @@
+HOSTLEN	dgram.c	11
+HOSTLEN	lclnt_funcs.c	18
+MAXUSERS	lserv_funcs.c	13
+MSGLEN	lclnt_funcs.c	16
+MSGLEN	lserv.c	7
+MSGLEN	lserv_funcs.c	11
+Mlclnt	lclnt.c	/^int main(int ac, char *av[]) $/
+Mlserv	lserv.c	/^int main(int ac, char *av[])$/
+SERVER_PORTNUM	lclnt_funcs.c	17
+SERVER_PORTNUM	lserv_funcs.c	10
+TICKET_AVAIL	lserv_funcs.c	12
+do_goodbye	lserv_funcs.c	/^char *do_goodbye(char *msg_p)$/
+do_hello	lserv_funcs.c	/^char *do_hello(char *msg_p)$/
+do_regular_work	lclnt.c	/^do_regular_work()$/
+do_transaction	lclnt_funcs.c	/^char *do_transaction(char *msg)$/
+free_all_tickets	lserv_funcs.c	/^free_all_tickets()$/
+get_internet_address	dgram.c	/^int get_internet_address(char *host, int len, int /
+get_ticket	lclnt_funcs.c	/^int get_ticket()$/
+handle_request	lserv_funcs.c	/^handle_request(char *req, struct sockaddr_in *clie/
+have_ticket	lclnt_funcs.c	14
+make_dgram_client_socket	dgram.c	/^int make_dgram_client_socket()$/
+make_dgram_server_socket	dgram.c	/^int make_dgram_server_socket(int portnum)$/
+make_internet_address	dgram.c	/^int make_internet_address(char *hostname, int port/
+narrate	lclnt_funcs.c	/^narrate(char *msg1)$/
+narrate	lserv_funcs.c	/^narrate(char *msg1, char *msg2, struct sockaddr_in/
+num_tickets_out	lserv_funcs.c	19
+oops	lclnt_funcs.c	/^#define oops(p) {perror(p); exit(1); }$/
+oops	lserv_funcs.c	/^#define oops(x) { perror(x); exit(-1); }$/
+pid	lclnt_funcs.c	9
+release_ticket	lclnt_funcs.c	/^int release_ticket()$/
+sd	lclnt_funcs.c	10
+sd	lserv_funcs.c	18
+serv_addr	lclnt_funcs.c	11
+serv_alen	lclnt_funcs.c	12
+setup	lclnt_funcs.c	/^setup()$/
+setup	lserv_funcs.c	/^setup()$/
+shut_down	lclnt_funcs.c	/^shut_down()$/
+shut_down	lserv_funcs.c	/^shut_down()$/
+ticket_array	lserv_funcs.c	17
+ticket_buf	lclnt_funcs.c	13

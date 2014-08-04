@@ -1,0 +1,141 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.1
+date	2014.04.01.12.10.28;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@/* animate several strings using threads, curses
+ * compile cc tanimate.c -lcurses -lpthread -o tanimate
+ */
+
+#include <stdio.h>
+#include <curses.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define MAXMSG 10
+#define TUNIT 20000	/* time units in microseconds */
+
+struct propset {
+	char *str;	/* the message */
+	int row;
+	int delay;
+	int dir;	/* +1 or -1 */
+};
+
+pthread_mutex_t mx = PTHREAD_MUTEX_INITIALIZER;
+
+int main(int ac, char *av[])
+{
+	int c;
+	pthread_t thrds[MAXMSG];
+	struct propset props[MAXMSG];	/* properties of string */
+	void *animate();
+	int num_msg;			/* number of strings*/
+	int i;
+
+	if (ac == 1) {
+		printf("usage: tanimate string...\n");
+		exit(1);
+	}
+
+	num_msg = setup(ac-1, av+1, props);
+
+	/* create all the threads */
+	for (i=0; i<num_msg; i++) 
+		if (pthread_create(&thrds[i], NULL, animate, &props[i])) {
+			fprintf(stderr,"error creating thread");
+			endwin();
+			exit(0);
+		}
+	/* precess user input */
+	while (1) {
+		c = getch();
+		if (c == 'Q') break;
+		if (c == ' ')
+			for (i=0; i<num_msg; i++)
+				props[i].dir = -props[i].dir;
+		if (c >= '0' && c <= '9') {
+			i = c - '0';
+			if (i<num_msg)
+				props[i].dir = -props[i].dir;
+		}
+	}
+
+	/* cancel all the threads */
+	pthread_mutex_lock(&mx);
+	for (i=0; i<num_msg; i++)
+		pthread_cancel(thrds[i]);
+	endwin();
+	return 0;
+}
+
+int setup(int nstrings, char *strings[], struct propset props[])
+{
+	int num_msg = (nstrings > MAXMSG?MAXMSG:nstrings);
+	int i;
+
+	/* assign rows and velocities to each string */
+	srand(getpid());
+	for (i = 0; i<num_msg; i++) {
+		props[i].str = strings[i];
+		props[i].row = i;
+		props[i].delay = 1 + (rand() % 15);
+		props[i].dir = ((rand() % 2) ?1:-1);
+	}
+
+	/* set up curses */
+	initscr();
+	crmode();
+	noecho();
+	clear();
+	mvprintw(LINES-1, 0, "'Q' to quit, '0'..'%d' to bounce",num_msg-1);
+	return num_msg;
+}
+
+/* the code that runs in each thread */
+void *animate(void *arg)
+{
+	struct propset *info = arg;	/* point to info block */
+	int len = strlen(info->str)+2;	/* +2 for padding */
+	int col = rand() % (COLS-len-3);
+
+	while (1) {
+		usleep(info->delay*TUNIT);
+
+		pthread_mutex_lock(&mx);	/* only one thread */
+		move(info->row, col);
+		addch(' ');
+		addstr(info->str);
+		addch(' ');
+		move(LINES-1, COLS-1);
+		refresh();
+		pthread_mutex_unlock(&mx);
+
+		/* move item to next column and check for bouncing */
+		col += info->dir;
+		if (col<=0 && info->dir == -1)
+			info->dir = 1;
+		else if (col + len >= COLS && info->dir == 1)
+			info->dir == -1;
+	}
+}
+
+@

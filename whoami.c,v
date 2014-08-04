@@ -1,0 +1,46 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.1
+date	2014.01.21.09.05.54;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#include<stdio.h>
+#include<utmp.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<time.h>
+
+int main(int argc, char *argv[])
+{
+	if (argc >1) {
+		printf("too much damn argument %s",argv[1]);
+		exit(1);
+	}
+	struct utmp *utbufp, *utmp_next();
+
+	if (utmp_open(UTMP_FILE) == -1) {
+		perror(UTMP_FILE);	/* UTMP_FILE is in utmp.h */
+		exit(1);
+	}
+
+	while ((utbufp=utmp_next()) != ((struct utmp *)NULL))
+		if (utbufp->ut_type == USER_PROCESS)
+			printf("% -8.8s\n",utbufp->ut_name);
+}
+@

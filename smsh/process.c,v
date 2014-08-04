@@ -1,0 +1,65 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.2
+date	2014.02.27.04.51.43;	author hotea;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2014.02.27.02.28.18;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@the process(char **arglist) function is called by the main loop
+@
+
+
+1.2
+log
+@check built-in command
+@
+text
+@/* command processing layer */
+#include<stdio.h>
+#include "smsh.h"
+
+int is_control_command(char *);
+int do_control_command(char **);
+int ok_to_execute();
+
+int process(char **args)
+/* purpose: process user command
+   if a built-in then call appropriate function, 
+   if not execute()
+*/
+{
+  int rv = 0;
+
+  if (args[0] == NULL)
+    rv = 0;
+  else if (is_control_command(args[0]))
+    rv = do_control_command(args);
+  else if (ok_to_execute())
+    if(!builtin_command(args, &rv))
+      rv = execute(args);
+  return rv;
+}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d22 2
+a23 1
+    rv = execute(args);
+@

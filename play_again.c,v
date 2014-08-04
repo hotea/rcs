@@ -1,0 +1,257 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.4
+date	2014.02.11.08.36.07;	author hotea;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2014.02.11.06.57.31;	author hotea;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2014.02.11.06.48.35;	author hotea;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2014.02.11.06.47.42;	author hotea;	state Exp;
+branches;
+next	;
+
+
+desc
+@need to press return
+@
+
+
+1.4
+log
+@no-delay mode
+@
+text
+@/* set tty  info no-delay mode
+ *returns:0=>yes, 1=>no, 2=>timeout
+ */
+#include<stdio.h>
+#include<termios.h>
+#include<fcntl.h>
+#include<string.h>
+
+#define ASK "Do you want another transaction"
+#define TRIES 3        /*max tries */
+#define SLEEPTIME 2    /*time per try*/
+#define BEEP putchar('\a')  /* alert user*/
+
+main()
+{
+  int response;
+    tty_mode(0);		/*save tty mode */
+    set_cr_noecho_mode();	/* set -icanon, -echo */
+    set_nodelay_mode();         /* noinput => EOF */
+    response = get_response(ASK,TRIES);
+    tty_mode(1);		/* restore tty mode */
+    return response;
+}
+
+get_response(char *question, int maxtries)
+{
+  int input;
+  printf("%s(y/n)?",question);
+  fflush(stdout);    /*force output*/
+  while (1) {
+	  sleep(SLEEPTIME);  /* wait a bit */
+	  input = tolower(get_ok_char()); /* get next chr*/
+	  if (input =='y')
+		  return 0;
+	  if (input == 'n')
+		  return 1;
+	  if (maxtries-- == 0)  /*outatime?*/
+		  return 2;     /* sayso*/
+	  BEEP;
+  }
+}
+ 
+/* skip over non-legal chars and return y,Y,n,N or EOF*/
+get_ok_char()
+{
+	int c;
+	while ((c=getchar()) != EOF && strchr("yYnN",c) == NULL);
+	return c;
+}
+
+set_cr_noecho_mode()
+{
+	struct termios ttystate;
+	tcgetattr(0, &ttystate);
+    ttystate.c_lflag &= ~ICANON;	/*no buffering */
+    ttystate.c_lflag &= ~ECHO;	/*no echo either */
+    ttystate.c_cc[VMIN] = 1;	/* get 1 char at a time */
+    tcsetattr(0, TCSANOW, &ttystate);	/* install setting */
+}
+
+set_nodelay_mode()
+{
+	int termflags;
+	termflags=fcntl(0, F_GETFL);
+	termflags|= O_NDELAY;  /* flip on nodelay bit */
+	fcntl(0,F_SETFL,termflags); /* and install 'em */
+}
+
+tty_mode(int how)
+{
+    static struct termios original_mode;
+    static int original_flags;
+    if (how == 0){
+	tcgetattr(0, &original_mode);
+    original_flags=fcntl(0, F_GETFL);
+    }
+    else {
+	return tcsetattr(0, TCSANOW, &original_mode);
+	fcntl(0, F_SETFL,original_flags);
+    }
+}
+@
+
+
+1.3
+log
+@ignore wrong input
+@
+text
+@d1 3
+a3 1
+/* method: set tty into char-by-char mode */
+d6 2
+d9 4
+a12 1
+#define QUESTION "Do you want another transaction"
+d16 1
+a16 1
+    int response;
+d19 2
+a20 1
+    response = get_response(QUESTION);
+d25 20
+a44 1
+int get_response(char *question)
+d46 3
+a48 13
+    int input;
+    printf("%s(y/n)?", question);
+    while (1) {
+	switch (input = getchar()) {
+	case 'y':
+	case 'Y':
+	    return 0;
+	case 'n':
+	case 'N':
+	case EOF:
+	    return 1;
+	}
+    }
+a51 3
+/* put file descriptor 0(i.e. stdin) into chr-by-chr and noecho mode
+ *use bits in termios
+ */
+d53 2
+a54 2
+    struct termios ttystate;
+    tcgetattr(0, &ttystate);	/*read current setting */
+d61 8
+a68 1
+/* how == 0 => save current mode, how == 1 => restore mode*/
+d72 2
+a73 1
+    if (how == 0)
+d75 3
+a77 1
+    else
+d79 2
+@
+
+
+1.2
+log
+@do no echo inappropriate input
+@
+text
+@d9 6
+a14 6
+  int response;
+  tty_mode(0);        /*save tty mode */
+  set_crmode();       /*set chr-by-chr mode*/
+  response = get_response(QUESTION);
+  tty_mode(1);        /* restore tty mode*/
+  return response;
+d19 12
+a30 12
+  int input;
+  printf("%s(y/n)?", question);
+  while (1) {
+    switch(input=getchar()) {
+    case 'y':
+    case 'Y':return 0;
+    case 'n':
+    case 'N':
+    case EOF:return 1;
+    default:
+      printf("\ncannot understand %c,",input);
+      printf("Plesae type y or n\n");
+a31 1
+  }
+d34 2
+a35 2
+set_crmode()
+/* put file descriptor 0(i.e. stdin) into chr-by-chr mode
+d39 6
+a44 5
+  struct termios ttystate;
+  tcgetattr(0, &ttystate);    /*read current setting */
+  ttystate.c_lflag &= ~ICANON;    /*no buffering */
+  ttystate.c_cc[VMIN] = 1;    /* get 1 char at a time */
+  tcsetattr(0, TCSANOW, &ttystate); /* install setting */
+d46 1
+d50 5
+a54 5
+  static struct termios original_mode;
+  if (how == 0)
+    tcgetattr(0, &original_mode);
+  else
+    return tcsetattr(0, TCSANOW,&original_mode);
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 4
+/* purpose: ask if user wants another transaction
+ * method: ask a question, wait for yes/no answer
+ * returns: 0->yes, 1->no
+ */
+a5 1
+int get_response(char *);
+d7 1
+a7 1
+int main()
+d10 2
+d13 1
+d19 2
+a20 1
+  printf("%s(y/n)?",question);
+d22 1
+a22 1
+    switch(getchar()) {
+d28 3
+d33 21
+@
